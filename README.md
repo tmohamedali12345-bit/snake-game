@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Snake Game Mobile</title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #111;
+      margin: 0;
+    }
+    canvas {
+      background: #000;
+      display: block;
+    }
+    #controls {
+      margin-top: 15px;
+      display: grid;
+      grid-template-columns: 80px 80px 80px;
+      grid-template-rows: 80px 80px;
+      gap: 10px;
+      justify-content: center;
+    }
+    button {
+      font-size: 24px;
+      border: none;
+      border-radius: 10px;
+      background: limegreen;
+      color: white;
+      cursor: pointer;
+    }
+    button:active {
+      background: green;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="game" width="400" height="400"></canvas>
+
+  <!-- أزرار التحكم -->
+  <div id="controls">
+    <div></div>
+    <button id="up">⬆️</button>
+    <div></div>
+    <button id="left">⬅️</button>
+    <button id="down">⬇️</button>
+    <button id="right">➡️</button>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
+
+    const box = 20;
+    let snake, direction, food, score, game;
+
+    function init() {
+      snake = [{ x: 9 * box, y: 10 * box }];
+      direction = null;
+      food = {
+        x: Math.floor(Math.random() * 20) * box,
+        y: Math.floor(Math.random() * 20) * box
+      };
+      score = 0;
+      if (game) clearInterval(game);
+      game = setInterval(draw, 100);
+    }
+
+    // التحكم من الكيبورد
+    document.addEventListener("keydown", event => {
+      if (event.key === "ArrowLeft" && direction !== "RIGHT") direction = "LEFT";
+      else if (event.key === "ArrowUp" && direction !== "DOWN") direction = "UP";
+      else if (event.key === "ArrowRight" && direction !== "LEFT") direction = "RIGHT";
+      else if (event.key === "ArrowDown" && direction !== "UP") direction = "DOWN";
+    });
+
+    // التحكم من أزرار الموبايل
+    document.getElementById("left").onclick = () => { if (direction !== "RIGHT") direction = "LEFT"; };
+    document.getElementById("up").onclick = () => { if (direction !== "DOWN") direction = "UP"; };
+    document.getElementById("right").onclick = () => { if (direction !== "LEFT") direction = "RIGHT"; };
+    document.getElementById("down").onclick = () => { if (direction !== "UP") direction = "DOWN"; };
+
+    function draw() {
+      ctx.fillStyle = "#000";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      for (let i = 0; i < snake.length; i++) {
+        ctx.fillStyle = i === 0 ? "lime" : "green";
+        ctx.fillRect(snake[i].x, snake[i].y, box, box);
+      }
+
+      ctx.fillStyle = "red";
+      ctx.fillRect(food.x, food.y, box, box);
+
+      let snakeX = snake[0].x;
+      let snakeY = snake[0].y;
+
+      if (direction === "LEFT") snakeX -= box;
+      if (direction === "UP") snakeY -= box;
+      if (direction === "RIGHT") snakeX += box;
+      if (direction === "DOWN") snakeY += box;
+
+      if (snakeX === food.x && snakeY === food.y) {
+        score++;
+        food = {
+          x: Math.floor(Math.random() * 20) * box,
+          y: Math.floor(Math.random() * 20) * box
+        };
+      } else {
+        snake.pop();
+      }
+
+      let newHead = { x: snakeX, y: snakeY };
+
+      if (
+        snakeX < 0 || snakeY < 0 ||
+        snakeX >= canvas.width || snakeY >= canvas.height ||
+        snake.some(part => part.x === newHead.x && part.y === newHead.y)
+      ) {
+        clearInterval(game);
+        alert("Game Over! Score: " + score);
+        init(); // تعاود تبدأ
+        return;
+      }
+
+      snake.unshift(newHead);
+
+      ctx.fillStyle = "white";
+      ctx.font = "20px Arial";
+      ctx.fillText("Score: " + score, 10, 20);
+    }
+
+    init();
+  </script>
+</body>
+</html>
